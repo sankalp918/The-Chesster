@@ -1,27 +1,35 @@
 import os
 import time
 import pyautogui
-import pygetwindow as gw
-import PIL
 
+# Open Firefox and navigate to chess.com
+os.system("start firefox https://www.chess.com/home")
+time.sleep(10)
 
-# Take a screenshot of a part of the screen where chess board is located.
-def screenshot():
-    # Get the window size
-    window = gw.getWindowsWithTitle('Play chess online')[0]
-    # Activating the window and resizing it
-    window.activate()
-    window.resizeTo(800, 600)
-    window.moveTo(0, 0)
-    time.sleep(1)
-    # Get the active window's position
-    x, y, w, h = window.left, window.top, window.width, window.height
-    # Take a screenshot of the active window
-    screenshot_captured = pyautogui.screenshot(region=(x, y, w, h))
-    # Crop the screenshot to the chess board
-    screenshot_cropped = screenshot_captured.crop((x + 252, y + 220, x + 558, y + 522))
-    # Save the screenshot to pictures folder with a timestamp
-    screenshot_cropped.save(os.path.join(os.path.expanduser("~"), "Pictures", f"{time.time()}.png"))
+# Click "Play Bots" button
+button_location = pyautogui.locateOnScreen('Play_Bots.png', confidence=0.8)
+if button_location is not None:
+    button_point = pyautogui.center(button_location)
+    pyautogui.click(button_point)
+    time.sleep(3)
+else:
+    print("Play Bots button not found on screen.")
+    exit()
 
+# Click "Play" button to start game with default bot
+button_location = pyautogui.locateOnScreen('Play.png', confidence=0.8)
+if button_location is not None:
+    button_point = pyautogui.center(button_location)
+    pyautogui.click(button_point)
+    time.sleep(5)
+else:
+    print("Play button not found on screen.")
+    exit()
 
-screenshot()
+# After game starts, hand off to ChessBot logic
+try:
+    from chess_engine import ChessBot
+    bot = ChessBot(stockfish_path='stockfish.exe', search_depth=15)
+    bot.play_game()
+except Exception as e:
+    print(f"Failed to start ChessBot: {e}")
